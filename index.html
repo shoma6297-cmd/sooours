@@ -37,7 +37,7 @@
             transform: scale(1.02);
         }
 
-        /* Контейнер для видео */
+        /* Контейнер для твоего локального видео */
         #bg-video-container {
             position: fixed;
             top: 0;
@@ -169,18 +169,14 @@
             letter-spacing: 4px;
         }
 
-        /* Кнопка "Далее" с анимацией появления */
+        /* Кнопка "Далее" с анимацией плавного появления */
         #next-btn {
             display: none;
-            animation: fadeInButton 0.5s ease forwards;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
 
-        @keyframes fadeInButton {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Гусь Шамиль */
+        /* Робот-Гусь Шамиль */
         .cyber-goose {
             width: 120px;
             height: 120px;
@@ -242,7 +238,7 @@
 
     <div id="bg-video-container">
         <video id="drift-video" muted playsinline preload="auto">
-            <source src="https://v.redd.it/3925003b617b0bade78e7ff8e70e2eed/DASH_720.mp4" type="video/mp4">
+            <source src="drift.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -302,12 +298,15 @@
         const overlay = document.getElementById('bg-overlay');
         const nextBtn = document.getElementById('next-btn');
 
-        // --- Отслеживание завершения ролика ---
+        // --- Умный триггер окончания видео ---
         videoElement.addEventListener('ended', () => {
             nextBtn.style.display = 'inline-block';
+            setTimeout(() => {
+                nextBtn.style.opacity = '1';
+            }, 50);
         });
 
-        // --- Навигация по экранам ---
+        // --- Переключение экранов ---
         function goToScreen(screenNumber) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 
@@ -317,19 +316,22 @@
             else if(screenNumber === 3) {
                 document.getElementById('screen-drift').classList.add('active');
                 
-                nextBtn.style.display = 'none'; // Скрываем кнопку до конца видео
+                // Прячем кнопку перед воспроизведением
+                nextBtn.style.display = 'none'; 
+                nextBtn.style.opacity = '0';
                 
-                // Проявляем плеер
+                // Плавно включаем видео-слой
                 videoBgContainer.style.opacity = '1';
                 staticBg.style.opacity = '0';
                 
+                // Запускаем воспроизведение
                 videoElement.muted = true;
                 videoElement.currentTime = 0; 
                 
                 let playPromise = videoElement.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(err => {
-                        console.log("Повторный запуск видео:", err);
+                        console.log("Повторный старт плеера:", err);
                         setTimeout(() => { videoElement.play(); }, 200);
                     });
                 }
@@ -339,13 +341,13 @@
             else if(screenNumber === 4) {
                 document.getElementById('screen-final').classList.add('active');
                 
-                // Затемняем видеофон на финальном шаге
-                videoBgContainer.style.opacity = '0.2'; 
+                // Делаем видео слегка фоновым и темным на последнем экране
+                videoBgContainer.style.opacity = '0.25'; 
                 overlay.style.background = "radial-gradient(circle at center, rgba(3, 3, 6, 0.6) 0%, rgba(2, 2, 4, 0.98) 100%)";
             }
         }
 
-        // --- Таймер ---
+        // --- Логика таймера ---
         let count = 10;
         const countdownEl = document.getElementById('countdown');
         const timerBox = document.getElementById('timer-box');

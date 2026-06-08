@@ -37,7 +37,7 @@
             transform: scale(1.02);
         }
 
-        /* Контейнер для твоего видео */
+        /* Контейнер для видео */
         #bg-video-container {
             position: fixed;
             top: 0;
@@ -172,7 +172,7 @@
         /* Кнопка "Далее" с анимацией появления */
         #next-btn {
             display: none;
-            animation: fadeInButton 0.5s ease forward;
+            animation: fadeInButton 0.5s ease forwards;
         }
 
         @keyframes fadeInButton {
@@ -240,16 +240,14 @@
 
     <div id="bg-container"></div>
 
-    <!-- Блок со встроенным твоим видео (БЕЗ loop) -->
     <div id="bg-video-container">
-        <video id="drift-video" muted playsinline>
-            <source src="drift.mp4" type="video/mp4">
+        <video id="drift-video" muted playsinline preload="auto">
+            <source src="https://v.redd.it/3925003b617b0bade78e7ff8e70e2eed/DASH_720.mp4" type="video/mp4">
         </video>
     </div>
 
     <div id="bg-overlay"></div>
 
-    <!-- ЭКРАН 1: ТАЙМЕР -->
     <div class="screen active" id="screen-timer">
         <div id="timer-box">
             <div class="timer-num" id="countdown">10</div>
@@ -261,7 +259,6 @@
         </div>
     </div>
 
-    <!-- ЭКРАН 2: ШАМИЛЬ -->
     <div class="screen" id="screen-shamil">
         <div class="hud-card">
             <div style="margin-bottom: 20px;">
@@ -280,19 +277,16 @@
         </div>
     </div>
 
-    <!-- ЭКРАН 3: СТРАНИЦА С ТВОИМ ВИДЕО -->
     <div class="screen" id="screen-drift">
         <div class="hud-card" style="border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(12, 13, 20, 0.5);">
             <div class="drift-status">M DYNAMIC MODE</div>
             <h1 style="font-size: 2rem; margin-bottom: 15px;">BMW DRIFT STAGE</h1>
             <p class="sub-text">Дождись окончания заноса, чтобы открыть финальное сообщение...</p>
             
-            <!-- Кнопка скрыта изначально через id="next-btn" -->
             <button class="btn" id="next-btn" onclick="goToScreen(4)" style="background: #ef4444;">Далее</button>
         </div>
     </div>
 
-    <!-- ЭКРАН 4: ФИНАЛЬНОЕ ПОСЛАНИЕ (БЕЗ САЛЮТА) -->
     <div class="screen" id="screen-final">
         <div class="hud-card final-card">
             <p class="exam-wish">
@@ -308,13 +302,12 @@
         const overlay = document.getElementById('bg-overlay');
         const nextBtn = document.getElementById('next-btn');
 
-        // --- Умное отслеживание конца видео ---
+        // --- Отслеживание завершения ролика ---
         videoElement.addEventListener('ended', () => {
-            // Как только видео кончилось — плавно показываем кнопку
             nextBtn.style.display = 'inline-block';
         });
 
-        // --- Переключение экранов ---
+        // --- Навигация по экранам ---
         function goToScreen(screenNumber) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 
@@ -324,28 +317,35 @@
             else if(screenNumber === 3) {
                 document.getElementById('screen-drift').classList.add('active');
                 
-                // Прячем кнопку (на случай повторных переходов)
-                nextBtn.style.style = 'none'; 
+                nextBtn.style.display = 'none'; // Скрываем кнопку до конца видео
                 
-                // Включаем видео
+                // Проявляем плеер
                 videoBgContainer.style.opacity = '1';
                 staticBg.style.opacity = '0';
                 
-                videoElement.currentTime = 0; // Включаем с самого начала
-                videoElement.play().catch(err => console.log("Браузер заблокировал старт:", err));
+                videoElement.muted = true;
+                videoElement.currentTime = 0; 
+                
+                let playPromise = videoElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.log("Повторный запуск видео:", err);
+                        setTimeout(() => { videoElement.play(); }, 200);
+                    });
+                }
 
                 overlay.style.background = "radial-gradient(circle at center, rgba(239, 68, 68, 0.05) 0%, rgba(3, 3, 6, 0.75) 100%)";
             } 
             else if(screenNumber === 4) {
                 document.getElementById('screen-final').classList.add('active');
                 
-                // Приглушаем видео на фоне, чтобы не отвлекало от текста
-                videoBgContainer.style.opacity = '0.25'; 
+                // Затемняем видеофон на финальном шаге
+                videoBgContainer.style.opacity = '0.2'; 
                 overlay.style.background = "radial-gradient(circle at center, rgba(3, 3, 6, 0.6) 0%, rgba(2, 2, 4, 0.98) 100%)";
             }
         }
 
-        // --- Логика таймера ---
+        // --- Таймер ---
         let count = 10;
         const countdownEl = document.getElementById('countdown');
         const timerBox = document.getElementById('timer-box');

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMW M5 F90 Experience</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Montserrat:wght@300;400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #030306;
+            font-family: 'Montserrat', sans-serif;
+            color: #f8fafc;
+        }
+
+        /* Статичный фон для 1, 2 и 4 экранов */
+        #bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-image: url('https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=2560&q=90');
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1s ease-in-out;
+            transform: scale(1.02);
+        }
+
+        /* Контейнер для твоего видео */
+        #bg-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            overflow: hidden;
+        }
+
+        #bg-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Затемнение для читаемости */
+        #bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            background: radial-gradient(circle at center, rgba(3, 3, 6, 0.2) 0%, rgba(2, 2, 4, 0.85) 100%);
+            transition: background 1s ease;
+        }
+
+        /* Экраны */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hud-card {
+            background: rgba(12, 13, 20, 0.65);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 55px 45px;
+            border-radius: 20px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.08);
+            max-width: 650px;
+            width: 100%;
+            transform: translateY(30px);
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .screen.active .hud-card {
+            transform: translateY(0);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sub-text {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Таймер */
+        .timer-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9rem;
+            font-weight: 900;
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 35px rgba(29, 78, 216, 0.5));
+            animation: enginePulse 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes enginePulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 25px rgba(29, 78, 216, 0.4)); }
+            100% { transform: scale(1.04); filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.7)); }
+        }
+
+        /* Стили кнопок */
+        .btn {
+            font-family: 'Orbitron', sans-serif;
+            padding: 18px 45px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #fff;
+            background: linear-gradient(90deg, #1d4ed8 0%, #ef4444 100%);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(29, 78, 216, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 35px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 45px rgba(239, 68, 68, 0.5);
+            letter-spacing: 4px;
+        }
+
+        /* Кнопка "Далее" с анимацией появления */
+        #next-btn {
+            display: none;
+            animation: fadeInButton 0.5s ease forward;
+        }
+
+        @keyframes fadeInButton {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Гусь Шамиль */
+        .cyber-goose {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.7));
+        }
+
+        .speech-bubble {
+            color: #e2e8f0;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            font-weight: 300;
+            margin-top: 15px;
+        }
+
+        .speech-bubble strong {
+            font-family: 'Orbitron', sans-serif;
+            color: #38bdf8;
+        }
+
+        .highlight-red {
+            color: #ef4444;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Статус дрифта */
+        .drift-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: #ef4444;
+            letter-spacing: 5px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            animation: blink 0.8s infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        /* Финал */
+        .final-card {
+            max-width: 750px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .exam-wish {
+            font-size: 1.5rem;
+            font-weight: 400;
+            line-height: 1.8;
+            color: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-container"></div>
+
+    <!-- Блок со встроенным твоим видео (БЕЗ loop) -->
+    <div id="bg-video-container">
+        <video id="drift-video" muted playsinline>
+            <source src="drift.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="bg-overlay"></div>
+
+    <!-- ЭКРАН 1: ТАЙМЕР -->
+    <div class="screen active" id="screen-timer">
+        <div id="timer-box">
+            <div class="timer-num" id="countdown">10</div>
+        </div>
+        <div id="surprise-text" style="display: none;" class="hud-card">
+            <h1>Чего ждешь?</h1>
+            <p class="sub-text" style="margin-top: 10px;">Думала, тут будет что-то вау? 😏</p>
+            <button class="btn" onclick="goToScreen(2)">Перейти сюда</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 2: ШАМИЛЬ -->
+    <div class="screen" id="screen-shamil">
+        <div class="hud-card">
+            <div style="margin-bottom: 20px;">
+                <svg class="cyber-goose" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 46C20 40 23 37 28 35C30 31 29 28 27 26C24 23 23 20 25 16C26 14 28 13 30 14C33 15 34 18 34 21C34 24 36 26 39 26C43 26 46 29 47 33C48 37 46 41 42 43L40 51C39 54 37 56 34 57H18" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="36" cy="19" r="1.5" fill="#38bdf8"/>
+                    <path d="M42 20L47 19L45 22Z" fill="#ffaa00"/>
+                    <path d="M22 46V53M30 46V53" stroke="#ffaa00" stroke-width="2"/>
+                </svg>
+                <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.1rem; letter-spacing: 5px; color: #38bdf8; margin-top: 10px;">ШАМИЛЬ</h2>
+            </div>
+            <div class="speech-bubble">
+                Если ищешь тут что-то невероятное, то это — <strong>ты</strong>. Твое стремление, твой труд, то, как беспокоишься за других и порой забываешь о себе и о своем здоровье... <br><br>Так что посмотри в зеркало и улыбнись, <span class="highlight-red">маймун</span> ❤️
+            </div>
+            <button class="btn" onclick="goToScreen(3)">Смотреть дрифт</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 3: СТРАНИЦА С ТВОИМ ВИДЕО -->
+    <div class="screen" id="screen-drift">
+        <div class="hud-card" style="border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(12, 13, 20, 0.5);">
+            <div class="drift-status">M DYNAMIC MODE</div>
+            <h1 style="font-size: 2rem; margin-bottom: 15px;">BMW DRIFT STAGE</h1>
+            <p class="sub-text">Дождись окончания заноса, чтобы открыть финальное сообщение...</p>
+            
+            <!-- Кнопка скрыта изначально через id="next-btn" -->
+            <button class="btn" id="next-btn" onclick="goToScreen(4)" style="background: #ef4444;">Далее</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 4: ФИНАЛЬНОЕ ПОСЛАНИЕ (БЕЗ САЛЮТА) -->
+    <div class="screen" id="screen-final">
+        <div class="hud-card final-card">
+            <p class="exam-wish">
+                Тебе удачи на завтрашний экзамен! И знай: ты хороший <span class="highlight-red">маймун</span>, а я буду стараться тебя веселить и поддерживать ✨
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const staticBg = document.getElementById('bg-container');
+        const videoBgContainer = document.getElementById('bg-video-container');
+        const videoElement = document.getElementById('drift-video');
+        const overlay = document.getElementById('bg-overlay');
+        const nextBtn = document.getElementById('next-btn');
+
+        // --- Умное отслеживание конца видео ---
+        videoElement.addEventListener('ended', () => {
+            // Как только видео кончилось — плавно показываем кнопку
+            nextBtn.style.display = 'inline-block';
+        });
+
+        // --- Переключение экранов ---
+        function goToScreen(screenNumber) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+            if(screenNumber === 2) {
+                document.getElementById('screen-shamil').classList.add('active');
+            } 
+            else if(screenNumber === 3) {
+                document.getElementById('screen-drift').classList.add('active');
+                
+                // Прячем кнопку (на случай повторных переходов)
+                nextBtn.style.style = 'none'; 
+                
+                // Включаем видео
+                videoBgContainer.style.opacity = '1';
+                staticBg.style.opacity = '0';
+                
+                videoElement.currentTime = 0; // Включаем с самого начала
+                videoElement.play().catch(err => console.log("Браузер заблокировал старт:", err));
+
+                overlay.style.background = "radial-gradient(circle at center, rgba(239, 68, 68, 0.05) 0%, rgba(3, 3, 6, 0.75) 100%)";
+            } 
+            else if(screenNumber === 4) {
+                document.getElementById('screen-final').classList.add('active');
+                
+                // Приглушаем видео на фоне, чтобы не отвлекало от текста
+                videoBgContainer.style.opacity = '0.25'; 
+                overlay.style.background = "radial-gradient(circle at center, rgba(3, 3, 6, 0.6) 0%, rgba(2, 2, 4, 0.98) 100%)";
+            }
+        }
+
+        // --- Логика таймера ---
+        let count = 10;
+        const countdownEl = document.getElementById('countdown');
+        const timerBox = document.getElementById('timer-box');
+        const surpriseText = document.getElementById('surprise-text');
+
+        const timerInterval = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
+            if (count <= 0) {
+                clearInterval(timerInterval);
+                timerBox.style.opacity = 0;
+                setTimeout(() => {
+                    timerBox.style.display = 'none';
+                    surpriseText.style.display = 'block';
+                }, 400);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
